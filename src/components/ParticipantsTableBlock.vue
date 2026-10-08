@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import type { Participant } from '@/types/participant'
+import BaseButton from './BaseButton.vue'
 
 defineProps<{
   participants: Participant[]
+}>()
+
+const emit = defineEmits<{
+  'request-delete': [participant: Participant]
 }>()
 </script>
 
@@ -18,6 +23,7 @@ defineProps<{
               <th scope="col">Date of Birth</th>
               <th scope="col">Email</th>
               <th scope="col">Phone number</th>
+              <th scope="col"><span class="visually-hidden">Delete</span></th>
             </tr>
           </thead>
           <tbody>
@@ -27,6 +33,15 @@ defineProps<{
               <td>{{ participant.birthDate }}</td>
               <td>{{ participant.email }}</td>
               <td>{{ participant.phone }}</td>
+              <td>
+                <BaseButton
+                  variant="danger"
+                  class="btn-sm"
+                  @click="emit('request-delete', participant)"
+                >
+                  Видалити учасника
+                </BaseButton>
+              </td>
             </tr>
           </tbody>
         </table>
