@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import type { Participant, ParticipantForm } from '@/types/participant'
 import RegisterFormBlock from './components/RegisterFormBlock.vue'
+import ParticipantsTableBlock from './components/ParticipantsTableBlock.vue'
 
 const participants = ref<Participant[]>([])
 
@@ -13,6 +14,6 @@ function addParticipant(data: ParticipantForm): void {
 <template>
   <main class="container py-4" style="max-width: 640px">
     <RegisterFormBlock :participants="participants" @register="addParticipant" />
-    <pre>{{ participants }}</pre>
+    <ParticipantsTableBlock :participants="participants" />
   </main>
 </template>
