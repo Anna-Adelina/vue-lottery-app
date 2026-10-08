@@ -7,6 +7,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
+  'request-edit': [participant: Participant]
   'request-delete': [participant: Participant]
 }>()
 </script>
@@ -23,6 +24,7 @@ const emit = defineEmits<{
               <th scope="col">Date of Birth</th>
               <th scope="col">Email</th>
               <th scope="col">Phone number</th>
+              <th scope="col"><span class="visually-hidden">Edit</span></th>
               <th scope="col"><span class="visually-hidden">Delete</span></th>
             </tr>
           </thead>
@@ -33,6 +35,15 @@ const emit = defineEmits<{
               <td>{{ participant.birthDate }}</td>
               <td>{{ participant.email }}</td>
               <td>{{ participant.phone }}</td>
+              <td>
+                <BaseButton
+                  variant="secondary"
+                  class="btn-sm"
+                  @click="emit('request-edit', participant)"
+                >
+                  Редагувати дані
+                </BaseButton>
+              </td>
               <td>
                 <BaseButton
                   variant="danger"

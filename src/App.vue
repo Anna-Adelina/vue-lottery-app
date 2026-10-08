@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import type { Participant, ParticipantForm } from '@/types/participant'
 import BaseButton from './components/BaseButton.vue'
 import BaseModal from './components/BaseModal.vue'
+import ParticipantFormFields from './components/ParticipantFormFields.vue'
 import WinnersListBlock from './components/WinnersListBlock.vue'
 import RegisterFormBlock from './components/RegisterFormBlock.vue'
 import ParticipantsTableBlock from './components/ParticipantsTableBlock.vue'
@@ -12,6 +13,7 @@ const MAX_WINNERS = 3
 const participants = ref<Participant[]>([])
 const winnerIds = ref<string[]>([])
 const participantToDelete = ref<Participant | null>(null)
+const participantToEdit = ref<Participant | null>(null)
 
 const winners = computed<Participant[]>(() =>
   winnerIds.value
@@ -27,12 +29,25 @@ const canPickWinner = computed<boolean>(
   () => winnerIds.value.length < MAX_WINNERS && availableParticipants.value.length > 0,
 )
 
-// Модалка відкрита, поки вибрано учасника для видалення
 const isDeleteModalOpen = computed<boolean>({
   get: () => participantToDelete.value !== null,
   set: (value) => {
     if (!value) participantToDelete.value = null
   },
+})
+
+const isEditModalOpen = computed<boolean>({
+  get: () => participantToEdit.value !== null,
+  set: (value) => {
+    if (!value) participantToEdit.value = null
+  },
+})
+
+// Початкові значення для форми редагування (без id)
+const editInitial = computed<ParticipantForm | undefined>(() => {
+  if (!participantToEdit.value) return undefined
+  const { name, birthDate, email, phone } = participantToEdit.value
+  return { name, birthDate, email, phone }
 })
 
 function addParticipant(data: ParticipantForm): void {
@@ -60,8 +75,20 @@ function confirmDelete(): void {
 
   const { id } = participantToDelete.value
   participants.value = participants.value.filter((p) => p.id !== id)
-  removeWinner(id) // якщо це був переможець, прибираємо і з блоку переможців
+  removeWinner(id)
   participantToDelete.value = null
+}
+
+function requestEdit(participant: Participant): void {
+  participantToEdit.value = participant
+}
+
+function updateParticipant(data: ParticipantForm): void {
+  if (!participantToEdit.value) return
+
+  const { id } = participantToEdit.value
+  participants.value = participants.value.map((p) => (p.id === id ? { id, ...data } : p))
+  participantToEdit.value = null
 }
 </script>
 
@@ -74,7 +101,26 @@ function confirmDelete(): void {
       @remove-winner="removeWinner"
     />
     <RegisterFormBlock :participants="participants" @register="addParticipant" />
-    <ParticipantsTableBlock :participants="participants" @request-delete="requestDelete" />
+    <ParticipantsTableBlock
+      :participants="participants"
+      @request-edit="requestEdit"
+      @request-delete="requestDelete"
+    />
+
+    <BaseModal v-model="isEditModalOpen">
+      <template #header>Редагування учасника</template>
+
+      <ParticipantFormFields
+        v-if="participantToEdit"
+        :key="participantToEdit.id"
+        :participants="participants"
+        :initial="editInitial"
+        :editing-id="participantToEdit.id"
+        submit-label="Оновити дані"
+        :reset-after-submit="false"
+        @submit="updateParticipant"
+      />
+    </BaseModal>
 
     <BaseModal v-model="isDeleteModalOpen">
       <template #header>Видалення учасника</template>
