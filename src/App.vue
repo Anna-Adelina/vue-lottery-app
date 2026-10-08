@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import BaseButton from './components/BaseButton.vue'
-import BaseInput from './components/BaseInput.vue'
+import type { Participant, ParticipantForm } from '@/types/participant'
+import RegisterFormBlock from './components/RegisterFormBlock.vue'
 
-const name = ref('')
+const participants = ref<Participant[]>([])
+
+function addParticipant(data: ParticipantForm): void {
+  participants.value.push({ id: crypto.randomUUID(), ...data })
+}
 </script>
 
 <template>
-  <main class="container py-4">
-    <BaseInput v-model="name" label="Name" placeholder="Enter user name" :error="name ? '' : 'This value is required.'" />
-    <BaseButton>Save</BaseButton>
-    <BaseButton variant="danger" disabled>Disabled</BaseButton>
+  <main class="container py-4" style="max-width: 640px">
+    <RegisterFormBlock :participants="participants" @register="addParticipant" />
+    <pre>{{ participants }}</pre>
   </main>
 </template>
