@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { Participant, ParticipantForm } from '@/types/participant'
+import { MAX_WINNERS, loadState, saveState } from '@/utils/storage'
 import BaseButton from './components/BaseButton.vue'
 import BaseModal from './components/BaseModal.vue'
 import ParticipantFormFields from './components/ParticipantFormFields.vue'
@@ -8,10 +9,11 @@ import WinnersListBlock from './components/WinnersListBlock.vue'
 import RegisterFormBlock from './components/RegisterFormBlock.vue'
 import ParticipantsTableBlock from './components/ParticipantsTableBlock.vue'
 
-const MAX_WINNERS = 3
+// Відновлення стану при старті (до створення ref-ів, тож watch не спрацює зайвий раз)
+const initialState = loadState()
 
-const participants = ref<Participant[]>([])
-const winnerIds = ref<string[]>([])
+const participants = ref<Participant[]>(initialState.participants)
+const winnerIds = ref<string[]>(initialState.winnerIds)
 const participantToDelete = ref<Participant | null>(null)
 const participantToEdit = ref<Participant | null>(null)
 
@@ -49,6 +51,13 @@ const editInitial = computed<ParticipantForm | undefined>(() => {
   const { name, birthDate, email, phone } = participantToEdit.value
   return { name, birthDate, email, phone }
 })
+
+// Зберігаємо учасників І переможців разом (переможці — це id учасників)
+watch(
+  [participants, winnerIds],
+  () => saveState({ participants: participants.value, winnerIds: winnerIds.value }),
+  { deep: true },
+)
 
 function addParticipant(data: ParticipantForm): void {
   participants.value.push({ id: crypto.randomUUID(), ...data })
