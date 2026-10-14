@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import BaseButton from '@/components/BaseButton.vue'
 import { useUsersStore } from '@/stores/users'
+import BaseModal from '@/components/BaseModal.vue'
+import type { User } from '@/types/user'
 
 const PAGE_SIZE = 10
 const DEBOUNCE_MS = 400
@@ -47,6 +49,41 @@ watch(q, (value) => {
   searchInput.value = value
 })
 
+const userToDelete = ref<User | null>(null)
+const isDeleting = ref(false)
+const deleteError = ref<string | null>(null)
+
+// як у App.vue лаби №4: модалка відкрита, поки є кого видаляти
+const isDeleteModalOpen = computed<boolean>({
+  get: () => userToDelete.value !== null,
+  set: (value) => {
+    if (!value) {
+      userToDelete.value = null
+      deleteError.value = null
+    }
+  },
+})
+
+function requestDelete(user: User): void {
+  userToDelete.value = user
+}
+
+async function confirmDelete(): Promise<void> {
+  if (!userToDelete.value) return
+  isDeleting.value = true
+  deleteError.value = null
+  try {
+    await store.deleteUser(userToDelete.value.id)
+    userToDelete.value = null
+    // видалили останнього на сторінці → повертаємось на попередню
+    if (users.value.length === 0 && page.value > 1) goToPage(page.value - 1)
+  } catch (e) {
+    deleteError.value = (e as Error).message
+  } finally {
+    isDeleting.value = false
+  }
+}
+
 function goToPage(value: number): void {
   router.push({ query: { ...route.query, page: value } })
 }
@@ -76,6 +113,7 @@ function goToPage(value: number): void {
           <th>Username</th>
           <th>Вік</th>
           <th>Телефон</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -90,6 +128,9 @@ function goToPage(value: number): void {
           <td>{{ user.username }}</td>
           <td>{{ user.age }}</td>
           <td>{{ user.phone }}</td>
+          <td>
+            <BaseButton variant="danger" @click="requestDelete(user)">Видалити</BaseButton>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -103,5 +144,18 @@ function goToPage(value: number): void {
         Далі
       </BaseButton>
     </div>
+    <BaseModal v-model="isDeleteModalOpen">
+        <template #header>Видалення користувача</template>
+
+        <p v-if="userToDelete" class="mb-0">
+            Ви дійсно бажаєте видалити "{{ userToDelete.firstName }} {{ userToDelete.lastName }}"?
+        </p>
+        <p v-if="deleteError" class="text-danger mt-2 mb-0">Помилка: {{ deleteError }}</p>
+
+        <template #footer>
+            <BaseButton variant="secondary" @click="isDeleteModalOpen = false">Ні</BaseButton>
+            <BaseButton variant="danger" :disabled="isDeleting" @click="confirmDelete">Так</BaseButton>
+        </template>
+    </BaseModal>
   </section>
 </template>

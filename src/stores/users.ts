@@ -38,5 +38,12 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
-  return { users, total, currentUser, isLoading, error, fetchUsers, fetchUser }
+  async function deleteUser(id: number): Promise<void> {
+    await ServiceProvider.users.delete(id)
+    users.value = users.value.filter((u) => u.id !== id)
+    total.value -= 1
+    if (currentUser.value?.id === id) currentUser.value = null
+  }
+
+  return { users, total, currentUser, isLoading, error, fetchUsers, fetchUser, deleteUser }
 })
