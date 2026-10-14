@@ -9,7 +9,7 @@ function close(): void {
   open.value = false
 }
 
-// Фокус на модалці, щоб вона ловила події клавіатури (Esc)
+// Фокус на модалці, щоб вона ловила події клавіатури, чекаємо трохи після увімкнення (Esc)
 watch(open, async (isOpen) => {
   if (!isOpen) return
   await nextTick()

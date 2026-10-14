@@ -31,6 +31,7 @@ const canPickWinner = computed<boolean>(
   () => winnerIds.value.length < MAX_WINNERS && availableParticipants.value.length > 0,
 )
 
+// 3 пункт, writable computed
 const isDeleteModalOpen = computed<boolean>({
   get: () => participantToDelete.value !== null,
   set: (value) => {
@@ -56,7 +57,7 @@ const editInitial = computed<ParticipantForm | undefined>(() => {
 watch(
   [participants, winnerIds],
   () => saveState({ participants: participants.value, winnerIds: winnerIds.value }),
-  { deep: true },
+  { deep: true }, // режим підвищеної уваги, наказ стежити за всіма глибокими змінами 
 )
 
 function addParticipant(data: ParticipantForm): void {

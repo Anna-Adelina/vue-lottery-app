@@ -18,34 +18,38 @@ const emit = defineEmits<{
 }>()
 
 const nameFilter = ref('')
-const sortKey = ref<SortKey | null>(null)
+const sortKey = ref<SortKey | null>(null)   // 'name' | 'birthDate' | null
 const sortDirection = ref<SortDirection>('asc')
 
-// Спочатку фільтруємо, потім сортуємо. Вихідний масив не змінюється
+ 
 const displayedParticipants = computed<Participant[]>(() => {
   const query = nameFilter.value.toLowerCase()
 
+  // при пошуку ігноруємо капс лок
   const filtered = props.participants.filter((p) => p.name.toLowerCase().includes(query))
 
   const key = sortKey.value
   if (!key) return filtered
 
+  //сортування за зростанням
   const factor = sortDirection.value === 'asc' ? 1 : -1
 
-  // filtered вже новий масив, тому sort не зачіпає props.participants
+  // сортуємо за ім'ям або датою
   return filtered.sort((a, b) => {
     const result =
       key === 'name'
         ? a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-        : a.birthDate.localeCompare(b.birthDate) // yyyy-mm-dd порівнюється як рядок
+        : a.birthDate.localeCompare(b.birthDate) // yyyy-mm-dd порівнюється як звичайний текст
     return result * factor
   })
 })
 
 function toggleSort(key: SortKey): void {
   if (sortKey.value === key) {
+    // Якщо клікнули на той самий стовпець, який вже активний — міняємо напрямок на протилежний
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
+    // Якщо клікнули на новий стовпець — робимо його активним і ставимо напрямок 'asc' (за зростанням)
     sortKey.value = key
     sortDirection.value = 'asc'
   }

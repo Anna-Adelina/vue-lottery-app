@@ -9,12 +9,13 @@ const emit = defineEmits<{
 
 const query = ref('')
 
+// watch спостерігає за змінами
 watch(query, (value, _oldValue, onCleanup) => {
   const timerId = setTimeout(() => {
     emit('filter-by-name', value.trim())
   }, DEBOUNCE_MS)
 
-  // Якщо користувач ще друкує, попередній таймер скасовується
+  // Щойно користувач вводить новий символ, викликає функцію очищення
   onCleanup(() => clearTimeout(timerId))
 })
 </script>
