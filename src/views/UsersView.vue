@@ -6,6 +6,7 @@ import { ServiceProvider } from '@/services/service-provider'
 import type { User } from '@/types/user'
 
 const PAGE_SIZE = 10
+const DEBOUNCE_MS = 400
 
 const route = useRoute()
 const router = useRouter()
@@ -16,7 +17,11 @@ const isLoading = ref(false)
 const error = ref<string | null>(null)
 
 const page = computed<number>(() => Math.max(1, Number(route.query.page) || 1))
+const q = computed<string>(() => (typeof route.query.q === 'string' ? route.query.q : ''))
 const totalPages = computed<number>(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)))
+
+// значення в полі вводу; початкове береться з URL
+const searchInput = ref(q.value)
 
 async function loadUsers(): Promise<void> {
   isLoading.value = true
@@ -25,6 +30,7 @@ async function loadUsers(): Promise<void> {
     const result = await ServiceProvider.users.getAll({
       limit: PAGE_SIZE,
       skip: (page.value - 1) * PAGE_SIZE,
+      q: q.value,
     })
     users.value = result.items
     total.value = result.total
@@ -35,8 +41,23 @@ async function loadUsers(): Promise<void> {
   }
 }
 
-// сторінка змінилась в URL → завантажуємо дані (і одразу при відкритті)
-watch(page, loadUsers, { immediate: true })
+// змінилась сторінка або запит в URL → завантажуємо дані (і одразу при відкритті)
+watch([page, q], loadUsers, { immediate: true })
+
+// користувач друкує → після паузи пишемо запит в URL
+watch(searchInput, (value, _old, onCleanup) => {
+  const timerId = setTimeout(() => {
+    const trimmed = value.trim()
+    if (trimmed === q.value) return
+    router.replace({ query: { q: trimmed || undefined, page: 1 } })
+  }, DEBOUNCE_MS)
+  onCleanup(() => clearTimeout(timerId))
+})
+
+// URL змінився ззовні (кнопка «Назад», вставлене посилання) → оновлюємо поле
+watch(q, (value) => {
+  searchInput.value = value
+})
 
 function goToPage(value: number): void {
   router.push({ query: { ...route.query, page: value } })
@@ -47,8 +68,16 @@ function goToPage(value: number): void {
   <section>
     <h1>Users</h1>
 
+    <input
+      v-model="searchInput"
+      type="search"
+      class="form-control mb-3"
+      placeholder="Пошук за ім’ям, email..."
+    />
+
     <p v-if="error" class="text-danger">Помилка: {{ error }}</p>
     <p v-else-if="isLoading">Завантаження...</p>
+    <p v-else-if="users.length === 0">Нічого не знайдено</p>
 
     <table v-else class="table">
       <thead>
