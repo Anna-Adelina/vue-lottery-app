@@ -28,6 +28,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Users', requiresAuth: true },
   },
   {
+    path: '/users/new',
+    name: 'user-create',
+    component: () => import('@/views/UserCreateView.vue'),
+    meta: { title: 'New user', requiresAuth: true },
+  },
+  {
     path: '/users/:id(\\d+)',
     name: 'user-detail',
     component: () => import('@/views/UserDetailView.vue'),

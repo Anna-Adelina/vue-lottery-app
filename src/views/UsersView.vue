@@ -92,6 +92,9 @@ function goToPage(value: number): void {
 <template>
   <section>
     <h1>Users</h1>
+    <RouterLink :to="{ name: 'user-create' }" class="btn btn-primary mb-3">
+        Додати користувача
+    </RouterLink>
 
     <input
       v-model="searchInput"
