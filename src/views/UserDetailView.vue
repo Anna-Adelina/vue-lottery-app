@@ -1,31 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { ServiceProvider } from '@/services/service-provider'
-import type { User } from '@/types/user'
+import { computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useUsersStore } from '@/stores/users'
 
 const props = defineProps<{ id: string }>()
 
-const user = ref<User | null>(null)
-const isLoading = ref(false)
-const error = ref<string | null>(null)
+const store = useUsersStore()
+const { currentUser: user, isLoading, error } = storeToRefs(store)
 
 // з URL id завжди рядок, а API працює з числами
 const userId = computed<number>(() => Number(props.id))
 
-async function loadUser(): Promise<void> {
-  isLoading.value = true
-  error.value = null
-  try {
-    user.value = await ServiceProvider.users.getById(userId.value)
-  } catch (e) {
-    error.value = (e as Error).message
-  } finally {
-    isLoading.value = false
-  }
-}
-
 // Vue перевикористовує компонент, коли змінюється лише :id, тож стежимо за ним
-watch(userId, loadUser, { immediate: true })
+watch(userId, (id) => store.fetchUser(id), { immediate: true })
 </script>
 
 <template>

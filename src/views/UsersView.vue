@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import BaseButton from '@/components/BaseButton.vue'
-import { ServiceProvider } from '@/services/service-provider'
-import type { User } from '@/types/user'
+import { useUsersStore } from '@/stores/users'
 
 const PAGE_SIZE = 10
 const DEBOUNCE_MS = 400
@@ -11,10 +11,8 @@ const DEBOUNCE_MS = 400
 const route = useRoute()
 const router = useRouter()
 
-const users = ref<User[]>([])
-const total = ref(0)
-const isLoading = ref(false)
-const error = ref<string | null>(null)
+const store = useUsersStore()
+const { users, total, isLoading, error } = storeToRefs(store)
 
 const page = computed<number>(() => Math.max(1, Number(route.query.page) || 1))
 const q = computed<string>(() => (typeof route.query.q === 'string' ? route.query.q : ''))
@@ -23,22 +21,12 @@ const totalPages = computed<number>(() => Math.max(1, Math.ceil(total.value / PA
 // значення в полі вводу; початкове береться з URL
 const searchInput = ref(q.value)
 
-async function loadUsers(): Promise<void> {
-  isLoading.value = true
-  error.value = null
-  try {
-    const result = await ServiceProvider.users.getAll({
-      limit: PAGE_SIZE,
-      skip: (page.value - 1) * PAGE_SIZE,
-      q: q.value,
-    })
-    users.value = result.items
-    total.value = result.total
-  } catch (e) {
-    error.value = (e as Error).message
-  } finally {
-    isLoading.value = false
-  }
+function loadUsers(): Promise<void> {
+  return store.fetchUsers({
+    limit: PAGE_SIZE,
+    skip: (page.value - 1) * PAGE_SIZE,
+    q: q.value,
+  })
 }
 
 // змінилась сторінка або запит в URL → завантажуємо дані (і одразу при відкритті)
