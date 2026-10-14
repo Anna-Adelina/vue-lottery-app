@@ -93,7 +93,11 @@ function goToPage(value: number): void {
       <tbody>
         <tr v-for="user in users" :key="user.id">
           <td>{{ user.id }}</td>
-          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>
+            <RouterLink :to="{ name: 'user-detail', params: { id: user.id } }">
+            {{ user.firstName }} {{ user.lastName }}
+            </RouterLink>
+          </td>
           <td>{{ user.email }}</td>
           <td>{{ user.username }}</td>
           <td>{{ user.age }}</td>

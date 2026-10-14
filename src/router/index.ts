@@ -28,6 +28,22 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Users', requiresAuth: true },
   },
   {
+    path: '/users/:id(\\d+)',
+    name: 'user-detail',
+    component: () => import('@/views/UserDetailView.vue'),
+    props: true,
+    meta: { title: 'User', requiresAuth: true },
+    children: [
+        {
+        path: 'edit',
+        name: 'user-edit',
+        component: () => import('@/views/UserEditView.vue'),
+        props: true,
+        meta: { title: 'Edit user', requiresAuth: true },
+        },
+    ],
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue'),
