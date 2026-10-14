@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { ServiceProvider } from '@/services/service-provider'
+
+onMounted(async () => {
+  console.log(await ServiceProvider.users.getAll({ limit: 3 }))
+  console.log(await ServiceProvider.users.getAll({ q: 'john' }))
+})
+
 const REPO_URL = 'https://github.com/<твій-нік>/vue-lottery-app'
 
 const technologies: string[] = [
