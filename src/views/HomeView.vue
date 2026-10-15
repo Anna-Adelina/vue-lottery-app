@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { ServiceProvider } from '@/services/service-provider'
-
-onMounted(async () => {
-  console.log(await ServiceProvider.users.getAll({ limit: 3 }))
-  console.log(await ServiceProvider.users.getAll({ q: 'john' }))
-})
-
-const REPO_URL = 'https://github.com/Anna-Adelina/vue-lottery-app.git'
+const REPO_URL = 'https://github.com/Anna-Adelina/vue-lottery-app'
 
 const technologies: string[] = [
   'Vue 3 (Composition API)',
