@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -66,4 +67,18 @@ const routes: RouteRecordRaw[] = [
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+router.beforeEach((to) => {
+  const auth = useAuthStore()
+
+  // закрита сторінка без логіну → на /login, запам'ятавши, куди хотів
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  // вже залогінений відкриває /login → на /users
+  if (to.name === 'login' && auth.isAuthenticated) {
+    return { name: 'users' }
+  }
 })
