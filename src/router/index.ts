@@ -6,6 +6,7 @@ declare module 'vue-router' {
   interface RouteMeta {
     title?: string
     requiresAuth?: boolean
+    layout?: 'default' | 'auth'
   }
 }
 
@@ -54,7 +55,7 @@ const routes: RouteRecordRaw[] = [
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
-    meta: { title: 'Login' },
+    meta: { title: 'Login', layout: 'auth' },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -81,4 +82,8 @@ router.beforeEach((to) => {
   if (to.name === 'login' && auth.isAuthenticated) {
     return { name: 'users' }
   }
+})
+
+router.afterEach((to) => {
+  document.title = to.meta.title ? `${to.meta.title} | Vue Lottery` : 'Vue Lottery'
 })

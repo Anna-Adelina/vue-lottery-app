@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import AppHeader from '@/components/AppHeader.vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import AuthLayout from '@/layouts/AuthLayout.vue'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
+
+const layouts = { default: DefaultLayout, auth: AuthLayout }
+
+const route = useRoute()
+const layout = computed(() => layouts[route.meta.layout ?? 'default'])
 </script>
 
 <template>
-  <div class="container py-4" style="max-width: 960px">
-    <AppHeader />
-    <main>
-      <RouterView />
-    </main>
-  </div>
+  <component :is="layout">
+    <RouterView />
+  </component>
 </template>
