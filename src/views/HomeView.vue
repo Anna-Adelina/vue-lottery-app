@@ -7,7 +7,7 @@ onMounted(async () => {
   console.log(await ServiceProvider.users.getAll({ q: 'john' }))
 })
 
-const REPO_URL = 'https://github.com/<твій-нік>/vue-lottery-app'
+const REPO_URL = 'https://github.com/Anna-Adelina/vue-lottery-app.git'
 
 const technologies: string[] = [
   'Vue 3 (Composition API)',

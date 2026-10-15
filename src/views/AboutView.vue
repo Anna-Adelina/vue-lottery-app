@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const FULL_NAME = 'Бурковська Анна-Аделіна Дмитрівна'
-const GITHUB_URL = 'https://github.com/Anna-Adelina/vue-lottery-app.git'
+const GITHUB_URL = 'https://github.com/Anna-Adelina'
 
 const skills: string[] = ['Java', 'Spring Boot', 'SQL', 'TypeScript', 'Vue 3', 'Git']
 </script>
