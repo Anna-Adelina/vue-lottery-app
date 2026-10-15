@@ -29,6 +29,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed<boolean>(() => accessToken.value !== null)
 
+  // якщо кілька запитів одночасно отримали 401, оновлюємо токен лише раз
+  let refreshPromise: Promise<string | null> | null = null
+
   function persist(): void {
     if (!accessToken.value || !refreshToken.value || !user.value) return
     const data: StoredAuth = {
@@ -57,5 +60,52 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(STORAGE_KEY)
   }
 
-  return { accessToken, refreshToken, user, isAuthenticated, login, logout }
+  // повертає новий accessToken, а якщо не вдалось, розлогінює і повертає null
+  function refreshAccessToken(): Promise<string | null> {
+    const currentRefreshToken = refreshToken.value
+    if (!currentRefreshToken) {
+      logout()
+      return Promise.resolve(null)
+    }
+
+    refreshPromise ??= ServiceProvider.auth
+      .refresh(currentRefreshToken)
+      .then((tokens) => {
+        accessToken.value = tokens.accessToken
+        refreshToken.value = tokens.refreshToken
+        persist()
+        return tokens.accessToken
+      })
+      .catch(() => {
+        logout()
+        return null
+      })
+      .finally(() => {
+        refreshPromise = null
+      })
+
+    return refreshPromise
+  }
+
+  // перевірка збереженої сесії при старті застосунку
+  async function checkSession(): Promise<void> {
+    if (!accessToken.value) return
+    try {
+      user.value = await ServiceProvider.auth.getMe(accessToken.value)
+      persist()
+    } catch {
+      // 401 уже обробив інтерсептор; інші помилки (наприклад, мережа) не розлогінюють
+    }
+  }
+
+  return {
+    accessToken,
+    refreshToken,
+    user,
+    isAuthenticated,
+    login,
+    logout,
+    refreshAccessToken,
+    checkSession,
+  }
 })
