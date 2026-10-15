@@ -46,7 +46,7 @@ async function logout(): Promise<void> {
     padding: 0.25rem 0.5rem;
     border-bottom: 2px solid transparent;
 
-    // клас додає vue-router, коли маршрут активний
+    // Активний пункт підсвічується
     &.router-link-active {
       font-weight: 600;
       border-bottom-color: currentColor;
